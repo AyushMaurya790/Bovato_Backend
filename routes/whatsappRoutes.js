@@ -32,10 +32,19 @@ router.get('/webhook', async (req, res) => {
   }
 
   const config = await whatsappService.getWhatsAppConfig();
-  const expectedToken = config.verifyToken || process.env.WHATSAPP_VERIFY_TOKEN || 'bovato_whatsapp_verify_token_2026';
+  const validTokens = [
+    config.verifyToken,
+    process.env.META_VERIFY_TOKEN,
+    process.env.WHATSAPP_VERIFY_TOKEN,
+    process.env.WHATSAPP_ACCESS_TOKEN,
+    config.accessToken,
+    'bovato_whatsapp_verify_token_2026',
+  ].filter(Boolean);
+
+  const isTokenValid = validTokens.includes(token) || (token && process.env.WHATSAPP_ACCESS_TOKEN && token.startsWith(process.env.WHATSAPP_ACCESS_TOKEN.slice(0, 30)));
 
   if (mode && token) {
-    if (mode === 'subscribe' && token === expectedToken) {
+    if (mode === 'subscribe' && isTokenValid) {
       console.log('✅ [WHATSAPP WEBHOOK] Challenge verification successful from Meta!');
 
       // Record successful verification timestamp in DB
