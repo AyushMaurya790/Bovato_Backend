@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="100%" height="100%">
+  <defs>
+    <!-- Deep Navy Blue Gradient -->
+    <linearGradient id="navyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f375b"/>
+      <stop offset="40%" stop-color="#162a47"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+
+    <!-- Metallic Silver Grey Gradient -->
+    <linearGradient id="silverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4d8e0"/>
+      <stop offset="35%" stop-color="#b0b7c3"/>
+      <stop offset="70%" stop-color="#8e96a4"/>
+      <stop offset="100%" stop-color="#707783"/>
+    </linearGradient>
+
+    <!-- Soft Drop Shadow -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#091322" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Clean Studio Background -->
+  <rect width="400" height="520" fill="#f8fafc"/>
+  
+  <!-- Subtle Studio Pedestal Shadow -->
+  <ellipse cx="200" cy="485" rx="110" ry="14" fill="#cbd5e1" opacity="0.4" filter="blur(6px)"/>
+
+  <!-- Product Container Structure -->
+  
+      <!-- Bottle Body -->
+      <rect x="120" y="210" width="160" height="260" rx="36" fill="url(#navyGradient)" filter="url(#shadow)"/>
+      <!-- Metallic Silver Neck & Pump -->
+      <rect x="175" y="170" width="50" height="42" fill="url(#silverGradient)" stroke="#8e96a4" stroke-width="1"/>
+      <rect x="160" y="150" width="80" height="22" rx="4" fill="url(#silverGradient)"/>
+      <!-- Pump Head -->
+      <path d="M 170 150 L 170 120 Q 170 110 185 110 L 240 110 Q 250 110 248 120 L 242 128 L 195 128 L 195 150 Z" fill="url(#silverGradient)"/>
+    
+
+  <!-- BOVATO MEN Branding & Labeling -->
+  <g text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+    <!-- Brand Logo Header -->
+    <text x="200" y="275" font-size="21" font-weight="900" fill="#ffffff" letter-spacing="3">BOVATO<tspan font-size="10" dy="-8">™</tspan></text>
+    <text x="200" y="292" font-size="10" font-weight="700" fill="#cbd5e1" letter-spacing="4">MEN</text>
+    <line x1="160" y1="300" x2="240" y2="300" stroke="#334e77" stroke-width="1.5"/>
+
+    <!-- Product Subtitle / Highlight Title -->
+    <text x="200" y="325" font-size="11" font-weight="800" fill="#ffffff" letter-spacing="1.5">ROOT FORTIFYING</text>
+    <text x="200" y="348" font-size="15" font-weight="900" fill="#00b4d8" letter-spacing="1">HAIR FALL SHAMPOO</text>
+
+    <line x1="145" y1="362" x2="255" y2="362" stroke="#334e77" stroke-width="1"/>
+
+    <!-- Ingredients Info -->
+    <text x="200" y="380" font-size="9" font-weight="700" fill="#94a3b8" letter-spacing="1">WITH</text>
+    <text x="200" y="394" font-size="10" font-weight="800" fill="#ffffff" letter-spacing="0.8">PRO-KERATIN + BIOTIN</text>
+
+    <!-- Volume / Weight -->
+    <text x="200" y="425" font-size="9.5" font-weight="600" fill="#cbd5e1" letter-spacing="1">300 ML</text>
+  </g>
+</svg>
