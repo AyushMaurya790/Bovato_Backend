@@ -1,6 +1,7 @@
 // jobs/abandonedCartJob.js
 // Background Cron / Periodic Detection & Recovery Automation Engine
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const AbandonedCart = require('../models/AbandonedCart');
 const RecoverySetting = require('../models/RecoverySetting');
 const Coupon = require('../models/Coupon');
@@ -14,6 +15,9 @@ let isJobRunning = false;
  */
 async function generateCartCoupon(discountPercent = 10, expiryHours = 48) {
   const code = `BOVATO-REC-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+  if (mongoose.connection.readyState !== 1) {
+    return code;
+  }
   try {
     await Coupon.create({
       code,
@@ -33,7 +37,8 @@ async function generateCartCoupon(discountPercent = 10, expiryHours = 48) {
  * Run one iteration of the Abandonment Detection & Recovery Pipeline
  */
 async function runAbandonedCartJob() {
-  if (isJobRunning) return;
+  // Only execute if MongoDB is fully connected (readyState 1) and no job is currently in flight
+  if (mongoose.connection.readyState !== 1 || isJobRunning) return;
   isJobRunning = true;
 
   try {
@@ -152,12 +157,22 @@ async function runAbandonedCartJob() {
 function startAbandonedCartJob(intervalMs = 60000) {
   if (jobInterval) {
     clearInterval(jobInterval);
+    jobInterval = null;
   }
 
-  console.log(`⚙️ [ABANDONED CART ENGINE] Initialized (Interval: ${intervalMs / 1000}s)`);
-  // Run initial check after 5s
-  setTimeout(runAbandonedCartJob, 5000);
-  jobInterval = setInterval(runAbandonedCartJob, intervalMs);
+  const scheduleJob = () => {
+    if (jobInterval) return;
+    console.log(`⚙️ [ABANDONED CART ENGINE] Initialized (Interval: ${intervalMs / 1000}s)`);
+    // Run initial check after 5s
+    setTimeout(runAbandonedCartJob, 5000);
+    jobInterval = setInterval(runAbandonedCartJob, intervalMs);
+  };
+
+  if (mongoose.connection.readyState === 1) {
+    scheduleJob();
+  } else {
+    mongoose.connection.once('open', scheduleJob);
+  }
 
   return jobInterval;
 }

@@ -1,27 +1,40 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const Coupon = require('../models/Coupon');
 const { protect, admin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Seed initial default coupons if not existing
+// Seed initial default coupons safely after MongoDB connection is open
 const ensureDefaultCoupons = async () => {
-  const defaults = [
-    { code: 'BOVATO10', discountPercent: 10, minCartValue: 0, type: 'welcome' },
-    { code: 'HOTDEAL15', discountPercent: 15, minCartValue: 799, type: 'special_offer' },
-    { code: 'VIP20', discountPercent: 20, minCartValue: 1499, type: 'special_offer' },
-    { code: 'COMEBACK15', discountPercent: 15, minCartValue: 0, type: 'abandoned_cart' },
-  ];
+  try {
+    const defaults = [
+      { code: 'BOVATO10', discountPercent: 10, minCartValue: 0, type: 'welcome' },
+      { code: 'HOTDEAL15', discountPercent: 15, minCartValue: 799, type: 'special_offer' },
+      { code: 'VIP20', discountPercent: 20, minCartValue: 1499, type: 'special_offer' },
+      { code: 'COMEBACK15', discountPercent: 15, minCartValue: 0, type: 'abandoned_cart' },
+    ];
 
-  for (const c of defaults) {
-    const exists = await Coupon.findOne({ code: c.code });
-    if (!exists) {
-      await Coupon.create(c);
+    for (const c of defaults) {
+      const exists = await Coupon.findOne({ code: c.code });
+      if (!exists) {
+        await Coupon.create(c);
+      }
     }
+  } catch (err) {
+    console.warn('[COUPONS] Auto-seed deferred or error handled:', err.message);
   }
 };
-ensureDefaultCoupons();
+
+// Only execute after MongoDB is connected, never at import time
+if (mongoose.connection.readyState === 1) {
+  ensureDefaultCoupons();
+} else {
+  mongoose.connection.once('open', () => {
+    ensureDefaultCoupons();
+  });
+}
 
 // @desc    Validate a coupon code against cart total
 // @route   POST /api/coupons/validate

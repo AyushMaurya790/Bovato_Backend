@@ -1,3 +1,12 @@
+const dns = require('dns');
+
+// Prioritize IPv4 over IPv6 to prevent Windows / ISP DNS ENOTFOUND on MongoDB Atlas replica set hosts
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+// Increase libuv threadpool size to handle parallel DNS lookups and MongoDB socket handshakes
+process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || '64';
+
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -151,6 +160,15 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+});
+
+// Process crash prevention handlers
+process.on('unhandledRejection', (err) => {
+  console.warn('⚠️ [PROCESS] Unhandled Promise Rejection:', err.message);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ [PROCESS] Uncaught Exception:', err.message);
 });
