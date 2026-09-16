@@ -747,6 +747,68 @@ async function sendOrderConfirmationWhatsApp({ order }) {
   return sendOrderNotification({ order, eventType: 'confirmed' });
 }
 
+/**
+ * 8. Send Phone Verification Confirmation WhatsApp Message
+ */
+async function sendVerificationConfirmation({
+  lead,
+  couponCode = 'BOVATO10',
+  websiteLink = 'http://localhost:8080',
+}) {
+  if (!lead || !lead.phone) return { success: false, error: 'Invalid lead' };
+
+  const { digits, e164 } = normalizeToE164(lead.phone);
+  const customerName = lead.name && lead.name.trim() ? lead.name.trim() : 'Friend';
+  const siteUrl = websiteLink || 'https://bovato.in';
+
+  const messageText = `🎉 *BOVATO — Mobile Number Verified!*
+
+Hi ${customerName} 👋,
+Your WhatsApp number has been successfully verified!
+
+🎁 Here is your exclusive VIP welcome discount:
+Use Coupon Code: *${couponCode}* at checkout to get *10% OFF + Free Express Shipping*.
+
+Claim your discount now:
+${siteUrl}
+
+Thank you for choosing BOVATO! 🌿`;
+
+  const dispatchResult = await dispatchMetaMessage({
+    toDigits: digits,
+    bodyText: messageText,
+  });
+
+  const waStatus = dispatchResult.success ? 'sent' : 'failed';
+  const directWaUrl = `https://wa.me/${digits}?text=${encodeURIComponent(messageText)}`;
+
+  try {
+    await WhatsAppMessage.create({
+      leadId: lead._id,
+      phone: e164,
+      templateName: 'verification_confirmation',
+      messageType: 'custom',
+      status: waStatus,
+      providerMessageId: dispatchResult.providerMessageId || '',
+      messageBody: messageText,
+      sentAt: dispatchResult.success ? new Date() : undefined,
+      failedAt: dispatchResult.success ? undefined : new Date(),
+      errorMessage: dispatchResult.error || '',
+      rawResponse: dispatchResult.rawResponse,
+    });
+  } catch (err) {
+    console.warn('[WHATSAPP] Failed to record verification confirmation in DB:', err.message);
+  }
+
+  return {
+    success: dispatchResult.success,
+    providerMessageId: dispatchResult.providerMessageId,
+    whatsappUrl: directWaUrl,
+    messageText,
+    dispatchedVia: dispatchResult.dispatchedVia,
+  };
+}
+
 function formatWhatsAppNumber(rawPhone) {
   return normalizeToE164(rawPhone).digits;
 }
@@ -761,6 +823,7 @@ module.exports = {
   sendTestMessage,
   sendWhatsAppOTP,
   sendLeadWelcomeOffer,
+  sendVerificationConfirmation,
   sendCustomWhatsAppMessage,
   sendCartRecoveryMessage,
   sendManualCartWhatsApp,
